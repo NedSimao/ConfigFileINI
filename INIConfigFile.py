@@ -4,7 +4,7 @@ class IniFile():
 
     def __init__(self):
         #Initializes a void class
-        self.refnum=None    #this is a reference pointing to the specific path indicated in OpenConfigData
+        super().__init__()
         self.initialFilePosition=0
 
     #Declaring private methods
@@ -18,21 +18,26 @@ class IniFile():
     def OpenConfigData(self, path):
         #Gets only the reference for the file assossiated with path
         try:
-            self.refnum=open(path,'w+')
+             #this is a reference pointing to the specific path indicated in OpenConfigData
+            self.refnum=open(path,"r")
+            #print("self.refnum=", self.refnum)
             self.NiDict={} #the key is the position in bytes of the value (value is the ni file section name)
             self.initialFilePosition=self.refnum.tell()
             trackPosition=0
             sectionName=""
-
-            for line in self.refnum:
+            
+            
+            print(self.refnum.read(10))
+            
+            """
                 if [] in line:
                     trackPosition=line.tell()
                     sectionName=line.strip("[]")
 
                     self.NiDict.update({trackPosition:sectionName})
-
-                #position the cursor in the begginning once more
-                self.refnum.seek(self.initialFilePosition)
+            """
+            #position the cursor in the begginning once more
+            self.refnum.seek(self.initialFilePosition)
 
         except FileNotFoundError :
             print("File not found! Please verify the path.")
@@ -99,7 +104,11 @@ class IniFile():
 
 
 if __name__=='__main__':
-    _path=""
+    #_path="/Users/happyuser/Documents/GitProjects/ConfigFileINI/example.ini"
+    _path=os.getcwd()+'/copie.ini'
+    print(_path)
+
+
     file=IniFile()
     file.OpenConfigData(_path)
     file.CloseConfigData()
