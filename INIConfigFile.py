@@ -5,6 +5,7 @@ class IniFile():
     def __init__(self):
         #Initializes a void class
         self.refnum=None    #this is a reference pointing to the specific path indicated in OpenConfigData
+        self.initialFilePosition=0
 
     #Declaring private methods
     #this methods will only be available inside this class and not outside
@@ -18,6 +19,21 @@ class IniFile():
         #Gets only the reference for the file assossiated with path
         try:
             self.refnum=open(path,'w+')
+            self.NiDict={} #the key is the position in bytes of the value (value is the ni file section name)
+            self.initialFilePosition=self.refnum.tell()
+            trackPosition=0
+            sectionName=""
+
+            for line in self.refnum:
+                if [] in line:
+                    trackPosition=line.tell()
+                    sectionName=line.strip("[]")
+
+                    self.NiDict.update({trackPosition:sectionName})
+
+                #position the cursor in the begginning once more
+                self.refnum.seek(self.initialFilePosition)
+
         except FileNotFoundError :
             print("File not found! Please verify the path.")
 
@@ -55,7 +71,7 @@ class IniFile():
         """
         pass
 
-    def CloseConfigData(self, writeFileIfChanged):
+    def CloseConfigData(self, writeFileIfChanged=False):
         """
         write file if changed (T) configures the VI to write the configuration data 
         to the platform-independent configuration file you specify with the Open Config Data VI.
@@ -78,4 +94,12 @@ class IniFile():
         """
         Gets the names of all sections from the configuration data identified by refnum 
         """
-        pass
+        return self.NiDict.values()
+    
+
+
+if __name__=='__main__':
+    _path=""
+    file=IniFile()
+    file.OpenConfigData(_path)
+    file.CloseConfigData()
