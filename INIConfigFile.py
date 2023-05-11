@@ -1,11 +1,25 @@
+import sys, os
+
 class IniFile():
 
     def __init__(self):
+        #Initializes a void class
+        self.refnum=None    #this is a reference pointing to the specific path indicated in OpenConfigData
+
+    #Declaring private methods
+    #this methods will only be available inside this class and not outside
+    def __saveRefNum(self):
         pass
 
 
+    #Declaring the interface
+    #The user will have access to this public methods
     def OpenConfigData(self, path):
-        pass
+        #Gets only the reference for the file assossiated with path
+        try:
+            self.refnum=open(path,'w+')
+        except FileNotFoundError :
+            print("File not found! Please verify the path.")
 
     def readKey(self, sectionName, keyName, value):
         """
@@ -48,7 +62,10 @@ class IniFile():
         You must set write file if changed (T) to the default value of TRUE for the VI to write 
         the configuration data. If the value is FALSE, the VI does not write the configuration data.
         """
-        pass
+        if(writeFileIfChanged==True):
+            self.__saveRefNum()
+        
+        self.refnum.close()
 
     def getKeyNames(self, sectionName):
         """
