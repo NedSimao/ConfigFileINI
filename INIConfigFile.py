@@ -13,6 +13,9 @@ class IniFile():
     def __saveRefNum(self):
         pass
 
+    def __goToBegin(self):
+        self.refnum.seek(self.initialFilePosition)
+
 
     #Declaring the interface
     #The user will have access to this public methods
@@ -31,30 +34,57 @@ class IniFile():
             left_brack='['
             count_line=self.initialFilePosition
             
-            
-            for line in self.refnum:
-                line=line.strip("\n")
-                #print(line)
-                count_line=count_line+1
-                if (left_brack in line) and (right_brack in line):  
-                    trackPosition=count_line
-                    sectionName=line.strip("[]")
-                    self.NiDict.update({trackPosition:sectionName})
+            stop=False
+            while(not stop):
+                line=self.refnum.readline()
+                if(line):
+                    line=line.strip("\n")
+                    #print(line)
+                    if (left_brack in line) and (right_brack in line):  
+                        trackPosition=self.refnum.tell()
+                        #print("key position : ", trackPosition)
+                        sectionName=line.strip("[]")
+                        self.NiDict.update({sectionName:trackPosition})
+                else:
+                    stop=True
         
             #position the cursor in the begginning once more
-            self.refnum.seek(self.initialFilePosition)
+            #self.refnum.seek(self.initialFilePosition)
+            self.__goToBegin()
+
+        
 
         except FileNotFoundError :
             print("File not found! Please verify the path.")
 
-    def readKey(self, sectionName, keyName, value):
+    def readKey(self, sectionName, keyName, defaultValue):
         """
-	    -section is the name of the section in which to write the specified key.
-        -key is the name of the key to write.
-        -value is the value to write to the key.
+        -section is the name of the section from which to read the specified key.
+        -key is the name of the key to read.
+        -default value is the value to return if the VI does not find the key in the specified section or if an error occurs.
         -found? is TRUE if the VI found the key in the specified section.
+        -value is the value of the key.
         """
-        pass
+
+        self.comment_patterns=[';','#']
+        self.skip_patterns=["\n"," "]
+
+        self.__goToBegin()
+        if (sectionName in self.getSectionNames()):
+            self.refnum.seek(self.NiDict[sectionName]) #entered in the section specified
+            for key in self.refnum:
+                key=key.strip("\n")
+                if('=' in key):
+                    key=key.strip(" ")
+                    key=key.split("=") #Gives a list containing the key and the value
+                    
+
+                    if(keyName == key[0%2].strip(" ")):
+                                return key[1%2].strip(" ")
+            return defaultValue
+                
+                
+                    
 
     def writeKey(self, sectionName, keyName, value):
         """
@@ -104,7 +134,7 @@ class IniFile():
         """
         Gets the names of all sections from the configuration data identified by refnum 
         """
-        return self.NiDict.values()
+        return self.NiDict.keys()
     
 
 
@@ -116,5 +146,6 @@ if __name__=='__main__':
 
     file=IniFile()
     file.OpenConfigData(_path)
+    print(file.readKey("database","file", 1))
     print(file.getSectionNames())
     file.CloseConfigData()
