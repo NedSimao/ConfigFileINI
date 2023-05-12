@@ -1,7 +1,8 @@
 import sys, os
+import re
+
 
 class IniFile():
-
     def __init__(self):
         #Initializes a void class
         super().__init__()
@@ -20,22 +21,26 @@ class IniFile():
         try:
              #this is a reference pointing to the specific path indicated in OpenConfigData
             self.refnum=open(path,"r")
+            #line=self.refnum
             #print("self.refnum=", self.refnum)
             self.NiDict={} #the key is the position in bytes of the value (value is the ni file section name)
             self.initialFilePosition=self.refnum.tell()
             trackPosition=0
             sectionName=""
+            right_brack=']'
+            left_brack='['
+            count_line=self.initialFilePosition
             
             
-            print(self.refnum.read(10))
-            
-            """
-                if [] in line:
-                    trackPosition=line.tell()
+            for line in self.refnum:
+                line=line.strip("\n")
+                #print(line)
+                count_line=count_line+1
+                if (left_brack in line) and (right_brack in line):  
+                    trackPosition=count_line
                     sectionName=line.strip("[]")
-
                     self.NiDict.update({trackPosition:sectionName})
-            """
+        
             #position the cursor in the begginning once more
             self.refnum.seek(self.initialFilePosition)
 
@@ -111,4 +116,5 @@ if __name__=='__main__':
 
     file=IniFile()
     file.OpenConfigData(_path)
+    print(file.getSectionNames())
     file.CloseConfigData()
