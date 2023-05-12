@@ -152,7 +152,57 @@ class IniFile():
         key is the name of the key to remove.
         found? is TRUE if the VI found the key in the specified section.
         """
-        pass
+        self.comment_patterns=[';','#']
+        self.skip_patterns=["\n"," "]
+
+        self.__goToBegin()
+
+        #fd, path = tempfile.mkstemp(suffix=".ini")
+        #path=path_dir+'/tmp.ini'
+        try:
+            keyRemoved=False
+            with tempfile.TemporaryDirectory() as td:
+                f_name = os.path.join(td, 'tempFileNi.ini')
+
+                with open(f_name, 'a+') as fh:
+                    for line in self.refnum:
+                        line=line.strip('\n')
+
+                        if(('=' in line)):
+                            temp_key=line.split("=")
+                            if(temp_key[0].strip(" ")==keyName or temp_key[0]==keyName):
+                                keyRemoved=True
+                                #dont write this key in the file
+                                #print("{0:} = {1:}".format(temp_key[0], value))
+                                #fh.write("{0:} = {1:}\n".format(temp_key[0].strip(" "), value))
+                                continue
+                            else:
+                                print("{0:} = {1:}".format(temp_key[0], temp_key[1]))
+                                fh.write("{0:} = {1:}\n".format(temp_key[0].strip(" "), temp_key[1].strip(" ")))
+
+                        else:
+                            print(line)
+                            fh.write(line+"\n")
+
+                        #data from src has been copied to dst
+                        #now we do the copy back
+                with open(f_name,'r') as fh:
+                    class_file=open(self._path,'w')
+                    class_file.seek(0)
+                    for tempFile in fh:
+                        class_file.write(tempFile)
+                        
+            return keyRemoved
+            
+        except Exception:
+            return False
+        finally:
+            pass
+            #The os.fdopen wraps the file descriptor in a Python file object, that closes automatically 
+            #when the with exits. The call to os.remove deletes the file when no longer needed.
+            
+        
+
 
     def removeSection(self, sectionName):
         """
@@ -160,18 +210,9 @@ class IniFile():
         section exists? is TRUE if the VI found the specified section.
         """
         pass
+    
 
-    def CloseConfigData(self, writeFileIfChanged=False):
-        """
-        write file if changed (T) configures the VI to write the configuration data 
-        to the platform-independent configuration file you specify with the Open Config Data VI.
-        You must set write file if changed (T) to the default value of TRUE for the VI to write 
-        the configuration data. If the value is FALSE, the VI does not write the configuration data.
-        """
-        if(writeFileIfChanged==True):
-            self.__saveRefNum()
-        
-        self.refnum.close()
+    
 
     def getKeyNames(self, sectionName):
         """
@@ -185,6 +226,18 @@ class IniFile():
         Gets the names of all sections from the configuration data identified by refnum 
         """
         return self.NiDict.keys()
+
+    def CloseConfigData(self, writeFileIfChanged=False):
+        """
+        write file if changed (T) configures the VI to write the configuration data 
+        to the platform-independent configuration file you specify with the Open Config Data VI.
+        You must set write file if changed (T) to the default value of TRUE for the VI to write 
+        the configuration data. If the value is FALSE, the VI does not write the configuration data.
+        """
+        if(writeFileIfChanged==True):
+            self.__saveRefNum()
+        
+        self.refnum.close()
     
 
 
@@ -206,6 +259,8 @@ if __name__=='__main__':
     
     print(file.writeKey("database","file", '"pay.dat"'))
     print(file.readKey("database","file"))
+    print(file.removeKey("database","file"))
+    print(file.readKey("database","file",'"not found"'))
 
     print(file.getSectionNames())
     file.CloseConfigData()
