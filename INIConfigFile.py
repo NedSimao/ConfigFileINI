@@ -1,6 +1,10 @@
 import sys, os
 import re
-
+import tempfile
+import shutil
+import errno
+from pathlib import Path
+import os.path
 
 class IniFile():
     def __init__(self):
@@ -23,9 +27,9 @@ class IniFile():
         #Gets only the reference for the file assossiated with path
         try:
              #this is a reference pointing to the specific path indicated in OpenConfigData
-            self.refnum=open(path,"r")
-            #line=self.refnum
-            #print("self.refnum=", self.refnum)
+            self._path=path
+            self.refnum=open(path,"r+")
+            print("openconfig type ",type(self.refnum), "\n refnum ", self.refnum)
             self.NiDict={} #the key is the position in bytes of the value (value is the ni file section name)
             self.initialFilePosition=self.refnum.tell()
             trackPosition=0
@@ -57,7 +61,7 @@ class IniFile():
         except FileNotFoundError :
             print("File not found! Please verify the path.")
 
-    def readKey(self, sectionName, keyName, defaultValue):
+    def readKey(self, sectionName, keyName, defaultValue=-1):
         """
         -section is the name of the section from which to read the specified key.
         -key is the name of the key to read.
@@ -93,7 +97,53 @@ class IniFile():
         -value is the value to write to the key.
         found? is TRUE if the VI found the key in the specified section.
         """
-        pass
+
+        self.comment_patterns=[';','#']
+        self.skip_patterns=["\n"," "]
+
+        self.__goToBegin()
+
+        #fd, path = tempfile.mkstemp(suffix=".ini")
+        #path=path_dir+'/tmp.ini'
+        try:
+            with tempfile.TemporaryDirectory() as td:
+                f_name = os.path.join(td, 'tempFileNi.ini')
+
+                with open(f_name, 'a+') as fh:
+                    for line in self.refnum:
+                        line=line.strip('\n')
+
+                        if(('=' in line)):
+                            temp_key=line.split("=")
+                            if(temp_key[0].strip(" ")==keyName or temp_key[0]==keyName):
+                                print("{0:} = {1:}".format(temp_key[0], value))
+                                fh.write("{0:} = {1:}\n".format(temp_key[0].strip(" "), value))
+                            else:
+                                print("{0:} = {1:}".format(temp_key[0], temp_key[1]))
+                                fh.write("{0:} = {1:}\n".format(temp_key[0].strip(" "), temp_key[1].strip(" ")))
+
+                        else:
+                            print(line)
+                            fh.write(line+"\n")
+
+                        #data from src has been copied to dst
+                        #now we do the copy back
+                with open(f_name,'r') as fh:
+                    class_file=open(self._path,'w')
+                    class_file.seek(0)
+                    for tempFile in fh:
+                        class_file.write(tempFile)
+                        
+            return True
+            
+        except Exception:
+            return False
+        finally:
+            pass
+            #The os.fdopen wraps the file descriptor in a Python file object, that closes automatically 
+            #when the with exits. The call to os.remove deletes the file when no longer needed.
+            
+        
 
     def removeKey(self, sectionName, keyName):
         """
@@ -146,6 +196,16 @@ if __name__=='__main__':
 
     file=IniFile()
     file.OpenConfigData(_path)
-    print(file.readKey("database","file", 1))
+
+    print(file.readKey("owner","name"))
+    print(file.readKey("owner","organization"))
+
+    print(file.readKey("database","server"))
+    print(file.readKey("database","port"))
+    print(file.readKey("database","file"))
+    
+    print(file.writeKey("database","file", '"pay.dat"'))
+    print(file.readKey("database","file"))
+
     print(file.getSectionNames())
     file.CloseConfigData()
