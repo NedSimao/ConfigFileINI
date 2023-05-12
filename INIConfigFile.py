@@ -219,7 +219,26 @@ class IniFile():
         section is the name of the section from which to get the key names.
         section exists? is TRUE if the VI found the specified section.
         """
-        pass
+        break_section=self.getSectionNames()
+        keyNames=[]
+
+        self.__goToBegin()
+
+        if (sectionName in self.getSectionNames()):
+            self.refnum.seek(self.NiDict[sectionName]) #entered in the section specified
+
+            for key in self.refnum:
+                #check if we havent reached the next section (marked with a "\n" caracter)
+                if((key != "\n")):#if it haven't find a newline than do
+                    key=key.strip('\n')
+
+                    if(('=' in key) and (not '[]' in key)):
+                            temp_key=key.split("=")
+                            keyNames.append(temp_key[0].strip(" "))
+                else:
+                    break
+
+        return keyNames
 
     def getSectionNames(self):
         """
@@ -250,6 +269,8 @@ if __name__=='__main__':
     file=IniFile()
     file.OpenConfigData(_path)
 
+
+
     print(file.readKey("owner","name"))
     print(file.readKey("owner","organization"))
 
@@ -259,8 +280,10 @@ if __name__=='__main__':
     
     print(file.writeKey("database","file", '"pay.dat"'))
     print(file.readKey("database","file"))
-    print(file.removeKey("database","file"))
-    print(file.readKey("database","file",'"not found"'))
+    #print(file.removeKey("database","file"))
+    #print(file.readKey("database","file",'"not found"'))
 
     print(file.getSectionNames())
+    print("KeyNames of [owner]:", file.getKeyNames("owner"))
+    print("KeyNames of [database]:",file.getKeyNames("database"))
     file.CloseConfigData()
