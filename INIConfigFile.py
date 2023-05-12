@@ -29,32 +29,10 @@ class IniFile():
              #this is a reference pointing to the specific path indicated in OpenConfigData
             self._path=path
             self.refnum=open(path,"r+")
-            print("openconfig type ",type(self.refnum), "\n refnum ", self.refnum)
             self.NiDict={} #the key is the position in bytes of the value (value is the ni file section name)
             self.initialFilePosition=self.refnum.tell()
-            trackPosition=0
-            sectionName=""
-            right_brack=']'
-            left_brack='['
-            count_line=self.initialFilePosition
-            
-            stop=False
-            while(not stop):
-                line=self.refnum.readline()
-                if(line):
-                    line=line.strip("\n")
-                    #print(line)
-                    if (left_brack in line) and (right_brack in line):  
-                        trackPosition=self.refnum.tell()
-                        #print("key position : ", trackPosition)
-                        sectionName=line.strip("[]")
-                        self.NiDict.update({sectionName:trackPosition})
-                else:
-                    stop=True
-        
-            #position the cursor in the begginning once more
-            #self.refnum.seek(self.initialFilePosition)
-            self.__goToBegin()
+
+            tmp=self.getSectionNames()
 
         
 
@@ -116,14 +94,14 @@ class IniFile():
                         if(('=' in line)):
                             temp_key=line.split("=")
                             if(temp_key[0].strip(" ")==keyName or temp_key[0]==keyName):
-                                print("{0:} = {1:}".format(temp_key[0], value))
+                                #print("{0:} = {1:}".format(temp_key[0], value))
                                 fh.write("{0:} = {1:}\n".format(temp_key[0].strip(" "), value))
                             else:
-                                print("{0:} = {1:}".format(temp_key[0], temp_key[1]))
+                                #print("{0:} = {1:}".format(temp_key[0], temp_key[1]))
                                 fh.write("{0:} = {1:}\n".format(temp_key[0].strip(" "), temp_key[1].strip(" ")))
 
                         else:
-                            print(line)
+                            #print(line)
                             fh.write(line+"\n")
 
                         #data from src has been copied to dst
@@ -177,11 +155,11 @@ class IniFile():
                                 #fh.write("{0:} = {1:}\n".format(temp_key[0].strip(" "), value))
                                 continue
                             else:
-                                print("{0:} = {1:}".format(temp_key[0], temp_key[1]))
+                                #print("{0:} = {1:}".format(temp_key[0], temp_key[1]))
                                 fh.write("{0:} = {1:}\n".format(temp_key[0].strip(" "), temp_key[1].strip(" ")))
 
                         else:
-                            print(line)
+                            #print(line)
                             fh.write(line+"\n")
 
                         #data from src has been copied to dst
@@ -191,13 +169,13 @@ class IniFile():
                     class_file.seek(0)
                     for tempFile in fh:
                         class_file.write(tempFile)
-                        
+                
             return keyRemoved
             
         except Exception:
             return False
         finally:
-            pass
+                self.__goToBegin()
             #The os.fdopen wraps the file descriptor in a Python file object, that closes automatically 
             #when the with exits. The call to os.remove deletes the file when no longer needed.
             
@@ -209,7 +187,67 @@ class IniFile():
         section is the name of the section to remove.
         section exists? is TRUE if the VI found the specified section.
         """
-        pass
+
+        try:
+            #start by removing each key
+            keys=self.getKeyNames(sectionName)
+            names=self.getSectionNames()
+            #print("section names", names)
+
+            for i in keys:
+                self.removeKey(sectionName, i)
+            self.__goToBegin()
+
+            #than remove the section
+            sectionRemoved=False
+            doWrite=True
+            
+            
+            with tempfile.TemporaryDirectory() as td:
+                f_name = os.path.join(td, 'tempFileNi.ini')
+
+                with open(f_name, 'w') as fh:
+                    for line in self.refnum:
+                        line=line.strip("\n")
+                        doWrite=True
+
+                        #find section
+                        for i in names:
+                            formated_pattern="[{0:}]".format((i.strip("\n")))
+                            formated_pattern=formated_pattern.strip("\n")
+
+                            if((formated_pattern == line) and (sectionName == i)):
+                                #print("encontrei : ",line, formated_pattern)
+                                sectionName=True
+                                doWrite=False
+                                break
+                        
+                        if(doWrite):
+                            #print(line)
+                            fh.write(line+"\n")
+
+             
+                #data from src has been copied to dst
+                #now we do the copy back
+
+                
+                with open(f_name,'r') as fh:
+                    class_file=open(self._path,'w')
+                    class_file.seek(0)
+                    for tempFile in fh:
+                        class_file.write(tempFile)
+                
+
+            #self.NiDict.pop(sectionName)
+            return sectionRemoved
+            
+        except Exception:
+            return False
+        finally:
+            pass
+            #The os.fdopen wraps the file descriptor in a Python file object, that closes automatically 
+            #when the with exits. The call to os.remove deletes the file when no longer needed.
+            
     
 
     
@@ -244,6 +282,33 @@ class IniFile():
         """
         Gets the names of all sections from the configuration data identified by refnum 
         """
+
+        self.NiDict={}
+        trackPosition=0
+        sectionName=""
+        right_brack=']'
+        left_brack='['
+        count_line=self.initialFilePosition
+        self.__goToBegin()
+ 
+        stop=False
+        while(not stop):
+            line=self.refnum.readline()
+            if(line):
+                line=line.strip("\n")
+                #print(line)
+                if (left_brack in line) and (right_brack in line):
+                    trackPosition=self.refnum.tell()
+                    #print("key position : ", trackPosition)
+                    sectionName=line.strip("[]")
+                    self.NiDict.update({sectionName:trackPosition})
+            else:
+                stop=True
+        
+        #position the cursor in the begginning once more
+        #self.refnum.seek(self.initialFilePosition)
+        self.__goToBegin()
+        
         return self.NiDict.keys()
 
     def CloseConfigData(self, writeFileIfChanged=False):
@@ -263,27 +328,29 @@ class IniFile():
 if __name__=='__main__':
     #_path="/Users/happyuser/Documents/GitProjects/ConfigFileINI/example.ini"
     _path=os.getcwd()+'/copie.ini'
-    print(_path)
 
 
     file=IniFile()
     file.OpenConfigData(_path)
+    #file.removeSection("owner")
+    #file.removeSection("database")
 
 
-
-    print(file.readKey("owner","name"))
-    print(file.readKey("owner","organization"))
+    #print(file.readKey("owner","name"))
+    #print(file.readKey("owner","organization"))
 
     print(file.readKey("database","server"))
     print(file.readKey("database","port"))
     print(file.readKey("database","file"))
     
     print(file.writeKey("database","file", '"pay.dat"'))
+    print(file.writeKey("siteweb","site1", '"python.org"'))
     print(file.readKey("database","file"))
     #print(file.removeKey("database","file"))
     #print(file.readKey("database","file",'"not found"'))
-
+    
     print(file.getSectionNames())
-    print("KeyNames of [owner]:", file.getKeyNames("owner"))
-    print("KeyNames of [database]:",file.getKeyNames("database"))
+    #print("KeyNames of [owner]:", file.getKeyNames("owner"))
+    #print("KeyNames of [database]:",file.getKeyNames("database"))
+
     file.CloseConfigData()
