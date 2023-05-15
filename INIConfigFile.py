@@ -381,7 +381,7 @@ if __name__=='__main__':
 
     file=IniFile()
     file.OpenConfigData(_path)
-    print(file.removeSection("owner"))
+    #file.removeSection("owner")
     #file.removeSection("database")
 
 
