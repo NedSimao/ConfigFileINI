@@ -135,18 +135,14 @@ class IniFile():
                             key_name=temp_key[0].strip(" ")
                             #print("split : ", temp_key[1].split(";"))
                             found, key_value=self.__FindComments(temp_key[1])
-                            print("key value :", key_value)
 
                             if((temp_key[0].strip(" ")==keyName) or (temp_key[0]==keyName) or key_name==keyName):
-                                print("On peut modifier à partir d'ici.")
                                 if(found):
                                     comment_car, comment=self.__GetComment(temp_key[1])
-                                    print("found : ", comment)
                                     #write key is done diferently
                                     #print("{0:} = {1:}".format(temp_key[0], value))
                                     fh.write("{0:} = {1:}{2:}{3:}\n".format(key_name, value, comment_car, comment))
                                 else:
-                                    print("not found")
                                     fh.write("{0:} = {1:}\n".format(key_name, value))
                                     #fh.write("{0:} = {1:}{2:}{3:}\n".format(key_name, value))
                             else:
@@ -201,7 +197,7 @@ class IniFile():
                         if(('=' in line)):
                             temp_key=line.split("=")
 
-                            print(self.__FindComments(temp_key[1]))
+                            #print(self.__FindComments(temp_key[1]))
                             if(temp_key[0].strip(" ")==keyName or temp_key[0]==keyName):
                                 keyRemoved=True
                                 #dont write this key in the file
@@ -223,7 +219,6 @@ class IniFile():
             return keyRemoved
             
         except Exception:
-            print("problem")
             return False
         finally:
                 self.__goToBegin()
@@ -243,7 +238,6 @@ class IniFile():
             #start by removing each key
             keys=self.getKeyNames(sectionName)
             names=self.getSectionNames()
-            #print("section names", names)
 
             for i in keys:
                 self.removeKey(sectionName, i)
@@ -263,12 +257,11 @@ class IniFile():
                         doWrite=True
 
                         #find section
-                        for i in names:
-                            formated_pattern="[{0:}]".format((i.strip("\n")))
+                        for section in names:
+                            formated_pattern="[{0:}]".format((section.strip("\n")))
                             formated_pattern=formated_pattern.strip("\n")
 
-                            if((formated_pattern == line) and (sectionName == i)):
-                                #print("encontrei : ",line, formated_pattern)
+                            if((formated_pattern in line) and (sectionName == section)):
                                 sectionName=True
                                 doWrite=False
                                 break
@@ -352,9 +345,11 @@ class IniFile():
                     trackPosition=self.refnum.tell()
                     #print("key position : ", trackPosition)
                     found, line=self.__FindComments(line)
-                    line=line.strip("[")
-                    line=line.strip("]")
-                    sectionName=line.replace(" ","")
+                    line=line.replace("["," ")
+                    line=line.replace("]"," ")
+                    #line=line.strip("[")
+                    #line=line.strip("]")
+                    sectionName=line.replace(" ","").strip("")
                     self.NiDict.update({sectionName:trackPosition})
             else:
                 stop=True
@@ -386,7 +381,7 @@ if __name__=='__main__':
 
     file=IniFile()
     file.OpenConfigData(_path)
-    #file.removeSection("owner")
+    print(file.removeSection("owner"))
     #file.removeSection("database")
 
 
@@ -398,7 +393,7 @@ if __name__=='__main__':
     #print(file.readKey("database","file"))
     
     #print(file.writeKey("database","file", '"payfortwo.dat"'))
-    print(file.writeKey("database","port", 14))
+    #print(file.writeKey("database","port", 14))
     #print(file.writeKey("siteweb","site1", '"python.org"'))
     #print(file.removeSection("siteweb"))
 
