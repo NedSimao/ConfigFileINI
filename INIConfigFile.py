@@ -11,6 +11,28 @@ class IniFile():
         #Initializes a void class
         super().__init__()
         self.initialFilePosition=0
+        self.setCommentCars()
+
+    def setCommentCars(self, CommentList="; # //"):
+        """
+        These are the caracters used to work as comments in the INI File
+        """
+        self.comment=CommentList
+
+    def __FindComments(self, _text):
+        """
+        After a first split with the key-value separateur, the comment takes the value after the separateur caracter
+        and do the evaluation on the second element of the list comming from the split("=")
+        """
+        found=True
+        commentCar_list=self.comment.split(" ")
+
+        for comment in commentCar_list:
+            if comment in _text:
+                text_list=_text.split(comment)
+                return found, text_list[0]
+        
+        return not found, _text
 
     #Declaring private methods
     #this methods will only be available inside this class and not outside
@@ -48,9 +70,6 @@ class IniFile():
         -value is the value of the key.
         """
 
-        self.comment_patterns=[';','#']
-        self.skip_patterns=["\n"," "]
-
         self.__goToBegin()
         if (sectionName in self.getSectionNames()):
             self.refnum.seek(self.NiDict[sectionName]) #entered in the section specified
@@ -59,6 +78,11 @@ class IniFile():
                 if('=' in key):
                     key=key.strip(" ")
                     key=key.split("=") #Gives a list containing the key and the value
+
+                    #evaluating the split
+                    found, key[1]=self.__FindComments(key[1])
+
+
                     
 
                     if(keyName == key[0%2].strip(" ")):
@@ -345,6 +369,8 @@ if __name__=='__main__':
     
     print(file.writeKey("database","file", '"pay.dat"'))
     print(file.writeKey("siteweb","site1", '"python.org"'))
+   # print(file.removeSection("siteweb"))
+
     print(file.readKey("database","file"))
     #print(file.removeKey("database","file"))
     #print(file.readKey("database","file",'"not found"'))
