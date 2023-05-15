@@ -29,7 +29,10 @@ class IniFile():
 
         for comment in commentCar_list:
             if comment in _text:
-                _text=_text.replace(" ", "")
+                #_text=_text.replace(" ", "")
+                #print("split : ", temp_key[1].split(";"))
+
+                #_text=_text.strip(" ")
                 text_list=_text.split(comment)
                 return found, text_list[0]
         
@@ -41,7 +44,7 @@ class IniFile():
 
         for comment in commentCar_list:
             if comment in _text:
-                _text=_text.replace(" ", "")
+                #_text=_text.replace(" ", "")
                 text_list=_text.split(comment)
                 return comment, text_list[1]
         
@@ -113,13 +116,8 @@ class IniFile():
         found? is TRUE if the VI found the key in the specified section.
         """
 
-        self.comment_patterns=[';','#']
-        self.skip_patterns=["\n"," "]
-
         self.__goToBegin()
 
-        #fd, path = tempfile.mkstemp(suffix=".ini")
-        #path=path_dir+'/tmp.ini'
         try:
             with tempfile.TemporaryDirectory() as td:
                 f_name = os.path.join(td, 'tempFileNi.ini')
@@ -127,15 +125,34 @@ class IniFile():
                 with open(f_name, 'a+') as fh:
                     for line in self.refnum:
                         line=line.strip('\n')
+                        #print(line)
 
                         if(('=' in line)):
                             temp_key=line.split("=")
-                            if(temp_key[0].strip(" ")==keyName or temp_key[0]==keyName):
-                                #print("{0:} = {1:}".format(temp_key[0], value))
-                                fh.write("{0:} = {1:}\n".format(temp_key[0].strip(" "), value))
+                            #print("key", temp_key)
+                            #if there is = in the line
+                            #then look for comments too
+                            key_name=temp_key[0].strip(" ")
+                            #print("split : ", temp_key[1].split(";"))
+                            found, key_value=self.__FindComments(temp_key[1])
+                            print("key value :", key_value)
+
+                            if((temp_key[0].strip(" ")==keyName) or (temp_key[0]==keyName) or key_name==keyName):
+                                print("On peut modifier à partir d'ici.")
+                                if(found):
+                                    comment_car, comment=self.__GetComment(temp_key[1])
+                                    print("found : ", comment)
+                                    #write key is done diferently
+                                    #print("{0:} = {1:}".format(temp_key[0], value))
+                                    fh.write("{0:} = {1:}{2:}{3:}\n".format(key_name, value, comment_car, comment))
+                                else:
+                                    print("not found")
+                                    fh.write("{0:} = {1:}\n".format(key_name, value))
+                                    #fh.write("{0:} = {1:}{2:}{3:}\n".format(key_name, value))
                             else:
                                 #print("{0:} = {1:}".format(temp_key[0], temp_key[1]))
-                                fh.write("{0:} = {1:}\n".format(temp_key[0].strip(" "), temp_key[1].strip(" ")))
+                                #fh.write("{0:} = {1:}\n".format(key_name, temp_key[1].strip(" ")))
+                                fh.write(line+"\n")
 
                         else:
                             #print(line)
@@ -380,7 +397,8 @@ if __name__=='__main__':
     #print(file.readKey("database","port"))
     #print(file.readKey("database","file"))
     
-    #print(file.writeKey("database","file", '"pay.dat"'))
+    #print(file.writeKey("database","file", '"payfortwo.dat"'))
+    print(file.writeKey("database","port", 14))
     #print(file.writeKey("siteweb","site1", '"python.org"'))
     #print(file.removeSection("siteweb"))
 
