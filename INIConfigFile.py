@@ -92,7 +92,8 @@ class IniFile():
 
             for key in self.refnum:
                 #print(key)
-                key=key.replace(" ","")
+                #key=key.replace(" ","")
+                key=key.strip(" ")
                 key=key.strip("\n")
                 if('=' in key):
                     key=key.split("=") #Gives a list containing the key and the value
@@ -385,8 +386,8 @@ if __name__=='__main__':
     #file.removeSection("database")
 
 
-    #print(file.readKey("owner","name"))
-    #print(file.readKey("owner","organization"))
+    print(file.readKey("owner","name"))
+    print(file.readKey("owner","organization"))
 
     #print(file.readKey("database","server"))
     #print(file.readKey("database","port"))
