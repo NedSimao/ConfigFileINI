@@ -389,13 +389,13 @@ if __name__=='__main__':
     #print(file.readKey("owner","name"))
     #print(file.readKey("owner","organization"))
 
-    print(file.readKey("database","server"))
-    print(file.readKey("database","port"))
-    print(file.readKey("database","file"))
+    #print(file.readKey("database","server"))
+    #print(file.readKey("database","port"))
+    #print(file.readKey("database","file"))
     
-    #print(file.writeKey("database","file", '"payfortwo.dat"'))
-    #print(file.writeKey("database","port", 14))
-    #print(file.writeKey("siteweb","site1", '"python.org"'))
+    print(file.writeKey("database","file", '"payforfor.dat"'))
+    print(file.writeKey("database","port", 12))
+    print(file.writeKey("siteweb","site1", '"pypo.org"'))
     #print(file.removeSection("siteweb"))
 
     #print(file.readKey("database","file"))
