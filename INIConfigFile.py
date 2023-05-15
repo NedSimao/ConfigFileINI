@@ -180,8 +180,6 @@ class IniFile():
                 with open(f_name, 'a+') as fh:
                     for line in self.refnum:
                         line=(line.strip('\n')).strip(" ")
-                        #line=line.replace(" ","")
-                        print(line)
 
                         if(('=' in line)):
                             temp_key=line.split("=")
@@ -190,18 +188,11 @@ class IniFile():
                             if(temp_key[0].strip(" ")==keyName or temp_key[0]==keyName):
                                 keyRemoved=True
                                 #dont write this key in the file
-                                #print("{0:} = {1:}".format(temp_key[0], value))
-                                #fh.write("{0:} = {1:}\n".format(temp_key[0].strip(" "), value))
                                 continue
                             else:
-                                #print("{0:} = {1:}".format(temp_key[0], temp_key[1]))
-                                #key=temp_key
-                                #check for comments
-                                #fh.write("{0:} = {1:}\n".format(temp_key[0].strip(" "), temp_key[1].strip(" ")))
                                 fh.write(line+"\n")
 
                         else:
-                            #print(line)
                             fh.write(line+"\n")
 
                         #data from src has been copied to dst
