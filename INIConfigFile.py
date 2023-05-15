@@ -34,6 +34,18 @@ class IniFile():
                 return found, text_list[0]
         
         return not found, _text
+    
+    def __GetComment(self, _text):
+
+        commentCar_list=self.comment.split(" ")
+
+        for comment in commentCar_list:
+            if comment in _text:
+                _text=_text.replace(" ", "")
+                text_list=_text.split(comment)
+                return comment, text_list[1]
+        
+        return  " "," "
 
     #Declaring private methods
     #this methods will only be available inside this class and not outside
@@ -155,8 +167,6 @@ class IniFile():
         key is the name of the key to remove.
         found? is TRUE if the VI found the key in the specified section.
         """
-        self.comment_patterns=[';','#']
-        self.skip_patterns=["\n"," "]
 
         self.__goToBegin()
 
@@ -169,10 +179,14 @@ class IniFile():
 
                 with open(f_name, 'a+') as fh:
                     for line in self.refnum:
-                        line=line.strip('\n')
+                        line=(line.strip('\n')).strip(" ")
+                        #line=line.replace(" ","")
+                        print(line)
 
                         if(('=' in line)):
                             temp_key=line.split("=")
+
+                            print(self.__FindComments(temp_key[1]))
                             if(temp_key[0].strip(" ")==keyName or temp_key[0]==keyName):
                                 keyRemoved=True
                                 #dont write this key in the file
@@ -181,7 +195,10 @@ class IniFile():
                                 continue
                             else:
                                 #print("{0:} = {1:}".format(temp_key[0], temp_key[1]))
-                                fh.write("{0:} = {1:}\n".format(temp_key[0].strip(" "), temp_key[1].strip(" ")))
+                                #key=temp_key
+                                #check for comments
+                                #fh.write("{0:} = {1:}\n".format(temp_key[0].strip(" "), temp_key[1].strip(" ")))
+                                fh.write(line+"\n")
 
                         else:
                             #print(line)
@@ -198,6 +215,7 @@ class IniFile():
             return keyRemoved
             
         except Exception:
+            print("problem")
             return False
         finally:
                 self.__goToBegin()
@@ -367,20 +385,21 @@ if __name__=='__main__':
     #print(file.readKey("owner","name"))
     #print(file.readKey("owner","organization"))
 
-    print(file.readKey("database","server"))
-    print(file.readKey("database","port"))
-    print(file.readKey("database","file"))
+    #print(file.readKey("database","server"))
+    #print(file.readKey("database","port"))
+    #print(file.readKey("database","file"))
     
-    print(file.writeKey("database","file", '"pay.dat"'))
-    print(file.writeKey("siteweb","site1", '"python.org"'))
-   # print(file.removeSection("siteweb"))
+    #print(file.writeKey("database","file", '"pay.dat"'))
+    #print(file.writeKey("siteweb","site1", '"python.org"'))
+    #print(file.removeSection("siteweb"))
 
-    print(file.readKey("database","file"))
+    #print(file.readKey("database","file"))
+    #print(file.removeKey("database","port"))
     #print(file.removeKey("database","file"))
     #print(file.readKey("database","file",'"not found"'))
     
-    print(file.getSectionNames())
-    print("KeyNames of [owner]:", file.getKeyNames("owner"))
-    print("KeyNames of [database]:",file.getKeyNames("database"))
+    #print(file.getSectionNames())
+    #print("KeyNames of [owner]:", file.getKeyNames("owner"))
+    #print("KeyNames of [database]:",file.getKeyNames("database"))
 
     file.CloseConfigData()
