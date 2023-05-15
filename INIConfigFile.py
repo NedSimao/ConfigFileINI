@@ -1,8 +1,5 @@
-import sys, os
-import re
+import os
 import tempfile
-import shutil
-import errno
 from pathlib import Path
 import os.path
 
@@ -18,6 +15,8 @@ class IniFile():
         These are the caracters used to work as comments in the INI File
         """
         self.comment=CommentList
+    #Declaring private methods
+    #this methods will only be available inside this class and not outside
 
     def __FindComments(self, _text):
         """
@@ -50,8 +49,7 @@ class IniFile():
         
         return  " "," "
 
-    #Declaring private methods
-    #this methods will only be available inside this class and not outside
+
     def __saveRefNum(self):
         pass
 
