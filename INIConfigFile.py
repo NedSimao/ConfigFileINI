@@ -386,12 +386,12 @@ if __name__=='__main__':
     #file.removeSection("database")
 
 
-    print(file.readKey("owner","name"))
-    print(file.readKey("owner","organization"))
+    #print(file.readKey("owner","name"))
+    #print(file.readKey("owner","organization"))
 
-    #print(file.readKey("database","server"))
-    #print(file.readKey("database","port"))
-    #print(file.readKey("database","file"))
+    print(file.readKey("database","server"))
+    print(file.readKey("database","port"))
+    print(file.readKey("database","file"))
     
     #print(file.writeKey("database","file", '"payfortwo.dat"'))
     #print(file.writeKey("database","port", 14))
