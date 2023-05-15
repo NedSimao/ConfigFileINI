@@ -393,9 +393,9 @@ if __name__=='__main__':
     #print(file.readKey("database","port"))
     #print(file.readKey("database","file"))
     
-    print(file.writeKey("database","file", '"payforfor.dat"'))
-    print(file.writeKey("database","port", 12))
-    print(file.writeKey("siteweb","site1", '"pypo.org"'))
+    #print(file.writeKey("database","file", '"payforfor.dat"'))
+    #print(file.writeKey("database","port", 12))
+    #print(file.writeKey("siteweb","site1", '"pypo.org"'))
     #print(file.removeSection("siteweb"))
 
     #print(file.readKey("database","file"))
@@ -403,8 +403,8 @@ if __name__=='__main__':
     #print(file.removeKey("database","file"))
     #print(file.readKey("database","file",'"not found"'))
     
-    #print(file.getSectionNames())
-    #print("KeyNames of [owner]:", file.getKeyNames("owner"))
-    #print("KeyNames of [database]:",file.getKeyNames("database"))
+    print(file.getSectionNames())
+    print("KeyNames of [owner]:", file.getKeyNames("owner"))
+    print("KeyNames of [database]:",file.getKeyNames("database"))
 
     file.CloseConfigData()
