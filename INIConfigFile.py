@@ -13,7 +13,7 @@ class IniFile():
         self.initialFilePosition=0
         self.setCommentCars()
 
-    def setCommentCars(self, CommentList="; # //"):
+    def setCommentCars(self, CommentList="; # // \t"):
         """
         These are the caracters used to work as comments in the INI File
         """
@@ -29,6 +29,7 @@ class IniFile():
 
         for comment in commentCar_list:
             if comment in _text:
+                _text=_text.replace(" ", "")
                 text_list=_text.split(comment)
                 return found, text_list[0]
         
@@ -73,17 +74,17 @@ class IniFile():
         self.__goToBegin()
         if (sectionName in self.getSectionNames()):
             self.refnum.seek(self.NiDict[sectionName]) #entered in the section specified
+
             for key in self.refnum:
+                #print(key)
+                key=key.replace(" ","")
                 key=key.strip("\n")
                 if('=' in key):
-                    key=key.strip(" ")
                     key=key.split("=") #Gives a list containing the key and the value
 
                     #evaluating the split
-                    found, key[1]=self.__FindComments(key[1])
+                    found, key[1]=self.__FindComments(key[1].strip(" "))
 
-
-                    
 
                     if(keyName == key[0%2].strip(" ")):
                                 return key[1%2].strip(" ")
@@ -293,8 +294,9 @@ class IniFile():
                 #check if we havent reached the next section (marked with a "\n" caracter)
                 if((key != "\n")):#if it haven't find a newline than do
                     key=key.strip('\n')
+                    found, key=self.__FindComments(key)
 
-                    if(('=' in key) and (not '[]' in key)):
+                    if(('=' in key) and (not '[' in key) and (not ']' in key)):
                             temp_key=key.split("=")
                             keyNames.append(temp_key[0].strip(" "))
                 else:
@@ -320,11 +322,13 @@ class IniFile():
             line=self.refnum.readline()
             if(line):
                 line=line.strip("\n")
-                #print(line)
                 if (left_brack in line) and (right_brack in line):
                     trackPosition=self.refnum.tell()
                     #print("key position : ", trackPosition)
-                    sectionName=line.strip("[]")
+                    found, line=self.__FindComments(line)
+                    line=line.strip("[")
+                    line=line.strip("]")
+                    sectionName=line.replace(" ","")
                     self.NiDict.update({sectionName:trackPosition})
             else:
                 stop=True
@@ -376,7 +380,7 @@ if __name__=='__main__':
     #print(file.readKey("database","file",'"not found"'))
     
     print(file.getSectionNames())
-    #print("KeyNames of [owner]:", file.getKeyNames("owner"))
-    #print("KeyNames of [database]:",file.getKeyNames("database"))
+    print("KeyNames of [owner]:", file.getKeyNames("owner"))
+    print("KeyNames of [database]:",file.getKeyNames("database"))
 
     file.CloseConfigData()
